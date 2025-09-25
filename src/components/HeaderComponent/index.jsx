@@ -2,21 +2,37 @@ import { LogOut } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Header() {
+
+
+  {/* create an instane of navigate method
+      and get the route/path of actual page */}
   const navigate = useNavigate();
   const location = useLocation();
 
+
+  {/* if user logs out, remove his
+      token from localStorage, so
+      his session is closed and
+      he must log-in again */}
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
+
+  {/* routes menu, clicking here
+      user is taken to desired
+      route */}
   const menu = [
     { label: "Dashboard", path: "/dashboard" },
     { label: "Gasometers", path: "/gasometers" },
+    { label: "Readings", path: "/readings" },
   ];
+
 
   return (
     <header className="w-full bg-white/10 backdrop-blur-lg border-b border-white/20 px-6 py-4 flex items-center justify-between shadow-md">
+
       <h1
         className="text-xl font-bold text-white tracking-wide cursor-pointer"
         onClick={() => navigate("/dashboard")}
@@ -24,6 +40,9 @@ export default function Header() {
         GasControl
       </h1>
 
+
+      {/* .map method in menu list (that contains the routes) 
+          and setting it to purple on the actual page*/}
       <nav className="flex gap-6 mx-auto">
         {menu.map((item) => (
           <button
@@ -40,6 +59,8 @@ export default function Header() {
         ))}
       </nav>
 
+
+      {/* button and icon containing logOut method */}
       <button
         onClick={handleLogout}
         className="flex items-center gap-2 text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 px-4 py-2 rounded-lg shadow transition active:scale-95 hover:cursor-pointer"

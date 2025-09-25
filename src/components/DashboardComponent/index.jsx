@@ -14,11 +14,17 @@ export default function Dashboard() {
   const [gasometers, setGasometers] = useState([]);
   const [readings, setReadings] = useState([]);
   const [filteredReadings, setFilteredReadings] = useState([]);
+  
+  {/* start and end dates to filter the chart */}
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [daysFilter, setDaysFilter] = useState(7); // filtro fixo padrão
+  
 
-  // Fetch gasometers
+  {/* state created in order to help when calculating readings avg */}
+  const [daysFilter, setDaysFilter] = useState(7);
+
+  
+  {/* fetching all 'gasometros' in backend */}
   useEffect(() => {
     fetch("http://localhost:8000/api/gasometros/")
       .then((res) => {
@@ -29,7 +35,8 @@ export default function Dashboard() {
       .catch((err) => console.error("Fetch error (gasometers):", err));
   }, []);
 
-  // Fetch readings
+  
+  {/* fetching all readings in backend */}
   useEffect(() => {
     fetch("http://localhost:8000/api/leituras/")
       .then((res) => {
@@ -43,7 +50,10 @@ export default function Dashboard() {
       .catch((err) => console.error("Fetch error (readings):", err));
   }, []);
 
-  // Filtro customizado de datas (inputs From/To)
+  
+  {/* useEffect to update chart data
+      whenever dates are selected
+      (unless they're null) */}
   useEffect(() => {
     if (!startDate || !endDate) {
       setFilteredReadings(readings);
@@ -55,7 +65,9 @@ export default function Dashboard() {
     setFilteredReadings(filtered);
   }, [startDate, endDate, readings]);
 
-  // Filtro fixo para cards de resumo
+  
+  {/* calculating average per day 
+    (readings VS last x days) */}
   const today = new Date();
   const pastDate = new Date();
   pastDate.setDate(today.getDate() - daysFilter);
@@ -68,7 +80,7 @@ export default function Dashboard() {
   const uniqueGasometers = new Set(filteredByDays.map((r) => r.gasometro)).size;
   const averagePerDay = totalFilteredReadings / daysFilter;
 
-  // Preparar dados do gráfico (agrupando por data)
+  
   const chartData = filteredReadings.reduce((acc, r) => {
     const day = r.data_leitura;
     const value = parseFloat(r.consumo_m3);
@@ -83,13 +95,17 @@ export default function Dashboard() {
     return acc;
   }, []);
 
+  
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-[rgb(15,15,30)] via-[rgb(30,30,60)] to-[rgb(50,10,80)] text-white">
       <Header />
 
       <main className="p-8 flex-1 overflow-auto">
 
-        {/* Filtro fixo */}
+        {/* last x days filter 
+            selecting a value here,
+            it updates "Total Gasometers", 
+            "Total Readings" and "Average per Day" cards */}
         <div className="flex gap-4 mb-6">
           {[7, 15, 30, 90].map((d) => (
             <button
@@ -106,7 +122,8 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Cards de resumo */}
+
+        {/* general gasometers info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white/10 backdrop-blur-lg p-4 rounded-xl shadow-md">
             <p className="text-sm">Total Gasometers</p>
@@ -122,7 +139,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Cards de Gasômetros */}
+
+        {/* gasometers detailed cards */}
         <h2 className="text-xl font-semibold mb-4">Gasometers</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
           {gasometers.map((g) => (
@@ -130,14 +148,15 @@ export default function Dashboard() {
               key={g.id}
               className="bg-white/10 backdrop-blur-lg p-4 rounded-xl shadow-md hover:scale-105 transition-transform"
             >
-              <p className="text-sm text-gray-300">Código</p>
+              <p className="text-sm text-gray-300">Name</p>
               <p className="text-lg font-bold text-white mb-2">{g.codigo}</p>
               <p className="text-sm text-gray-400">{g.apartamento_info}</p>
             </div>
           ))}
         </div>
 
-        {/* Filtros de período customizado */}
+
+        {/* chart dates filter */}
         <div className="flex gap-4 mb-6">
           <label className="flex flex-col text-gray-300">
             From:
@@ -159,7 +178,7 @@ export default function Dashboard() {
           </label>
         </div>
 
-        {/* Gráfico de consumo */}
+
         <div className="bg-white/10 backdrop-blur-lg p-4 rounded-xl shadow-md">
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
