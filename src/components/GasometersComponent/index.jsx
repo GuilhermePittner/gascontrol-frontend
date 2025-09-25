@@ -10,6 +10,8 @@ export default function GasometersPage() {
     const [selectedGasometer, setSelectedGasometer] = useState(null);
     const [showFormModal, setShowFormModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 9;
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
@@ -34,6 +36,7 @@ export default function GasometersPage() {
             g.codigo.toLowerCase().includes(search.toLowerCase())
         );
         setFilteredGasometers(filtered);
+        setCurrentPage(1); // reset page on search
     }, [search, gasometers]);
 
     const handleOpenForm = (gasometer = null) => {
@@ -98,6 +101,12 @@ export default function GasometersPage() {
             .catch(err => console.error(err));
     };
 
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredGasometers.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(filteredGasometers.length / itemsPerPage);
+
     return (
         <div className="h-screen flex flex-col bg-gradient-to-br from-[rgb(15,15,30)] via-[rgb(30,30,60)] to-[rgb(50,10,80)] text-white">
             <Header />
@@ -120,11 +129,12 @@ export default function GasometersPage() {
                     </button>
                 </div>
 
+                {/* Gasometers grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredGasometers.map((g) => (
+                    {currentItems.map((g) => (
                         <div key={g.id} className="bg-white/10 backdrop-blur-lg p-4 rounded-xl shadow-md flex flex-col justify-between">
                             <div>
-                                <p className="text-sm text-gray-300">Código</p>
+                                <p className="text-sm text-gray-300">Identification</p>
                                 <p className="text-lg font-bold text-white">{g.codigo}</p>
                                 <p className="text-sm text-gray-400">{g.apartamento_info || g.apartamento}</p>
                             </div>
@@ -152,26 +162,62 @@ export default function GasometersPage() {
                     ))}
                 </div>
 
+                {/* Pagination controls */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center gap-2 mt-6">
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 bg-gray-500 rounded disabled:opacity-50 hover:cursor-pointer"
+                        >
+                            Prev
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => (
+                            <button
+                                key={i + 1}
+                                onClick={() => setCurrentPage(i + 1)}
+                                className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-purple-600" : "bg-gray-500 hover:cursor-pointer"}`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 bg-gray-500 rounded disabled:opacity-50 hover:cursor-pointer"
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
+
+                {/* Form Modal */}
                 {showFormModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl w-[400px]">
                             <h2 className="text-xl font-bold mb-4">{isEditing ? "Edit Gasometer" : "Add Gasometer"}</h2>
                             <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
                                 <div className="flex flex-col">
-                                    <label className="text-gray-300">Código</label>
+                                    <label className="text-gray-300">Code</label>
                                     <input
                                         type="text"
-                                        {...register("codigo", { required: "Código é obrigatório" })}
-                                        className={`px-3 py-2 rounded-lg text-black bg-white/90 focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.codigo ? "ring-2 ring-red-500" : ""}`}
+                                        autoComplete="off"
+                                        placeholder="Gasometer name"
+                                        {...register("codigo", { required: "Code cannot be blank" })}
+                                        className={`px-3 py-2 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.codigo ? "ring-2 ring-red-500" : ""}`}
                                     />
                                     {errors.codigo && <span className="text-red-400 text-sm">{errors.codigo.message}</span>}
                                 </div>
                                 <div className="flex flex-col">
-                                    <label className="text-gray-300">Apartamento</label>
+                                    <label className="text-gray-300">Apartment</label>
                                     <input
-                                        type="text"
-                                        {...register("apartamento", { required: "Apartamento é obrigatório" })}
-                                        className={`px-3 py-2 rounded-lg text-black bg-white/90 focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.apartamento ? "ring-2 ring-red-500" : ""}`}
+                                        type="number"
+                                        autoComplete="off"
+                                        placeholder="1"
+                                        {...register("apartamento", { required: "Apartment cannot be blank" })}
+                                        className={`px-3 py-2 rounded-lg text-black bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.apartamento ? "ring-2 ring-red-500" : ""}`}
                                     />
                                     {errors.apartamento && <span className="text-red-400 text-sm">{errors.apartamento.message}</span>}
                                 </div>
@@ -196,12 +242,13 @@ export default function GasometersPage() {
                     </div>
                 )}
 
+                {/* Details Modal */}
                 {selectedGasometer && !showFormModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
                         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl w-[400px]">
                             <h2 className="text-xl font-bold mb-4">Gasometer Details</h2>
-                            <p><strong>Código:</strong> {selectedGasometer.codigo}</p>
-                            <p><strong>Apartamento:</strong> {selectedGasometer.apartamento_info || selectedGasometer.apartamento}</p>
+                            <p><strong>Code:</strong> {selectedGasometer.codigo}</p>
+                            <p><strong>Apartment:</strong> {selectedGasometer.apartamento_info || selectedGasometer.apartamento}</p>
 
                             <div className="flex justify-end mt-4">
                                 <button
