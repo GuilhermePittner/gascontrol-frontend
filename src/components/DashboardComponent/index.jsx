@@ -11,6 +11,8 @@ import {
 } from "recharts";
 
 export default function Dashboard() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
   const [gasometers, setGasometers] = useState([]);
   const [readings, setReadings] = useState([]);
   const [filteredReadings, setFilteredReadings] = useState([]);
@@ -26,7 +28,7 @@ export default function Dashboard() {
   
   {/* fetching all 'gasometros' in backend */}
   useEffect(() => {
-    fetch("http://localhost:8000/api/gasometros/")
+    fetch(`${API_BASE_URL}/gasometros/`)
       .then((res) => {
         if (!res.ok) throw new Error("Network response was not ok");
         return res.json();
@@ -38,7 +40,7 @@ export default function Dashboard() {
   
   {/* fetching all readings in backend */}
   useEffect(() => {
-    fetch("http://localhost:8000/api/leituras/")
+    fetch(`${API_BASE_URL}/leituras/`)
       .then((res) => {
         if (!res.ok) throw new Error("Network response was not ok");
         return res.json();

@@ -4,6 +4,8 @@ import { Trash2, Edit, Plus, Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 export default function ReadingsPage() {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    
     const [readings, setReadings] = useState([]);
     const [filteredReadings, setFilteredReadings] = useState([]);
     const [search, setSearch] = useState("");
@@ -24,7 +26,7 @@ export default function ReadingsPage() {
     
     {/* fetching all 'readings' in backend */}
     const fetchReadings = () => {
-        fetch("http://localhost:8000/api/leituras/")
+        fetch(`${API_BASE_URL}/leituras/`)
             .then(res => {
                 if (!res.ok) {
                     if (res.status === 404) return [];
@@ -106,7 +108,7 @@ export default function ReadingsPage() {
 
     const handleDelete = () => {
         if (!readingToDelete) return;
-        fetch(`http://localhost:8000/api/leituras/${readingToDelete.id}/`, {
+        fetch(`${API_BASE_URL}/leituras/${readingToDelete.id}/`, {
             method: "DELETE",
         })
             .then(res => {
@@ -133,7 +135,7 @@ export default function ReadingsPage() {
         };
 
         if (isEditing && selectedReading) {
-            fetch(`http://localhost:8000/api/leituras/${selectedReading.id}/`, {
+            fetch(`${API_BASE_URL}/leituras/${selectedReading.id}/`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -145,7 +147,7 @@ export default function ReadingsPage() {
                 })
                 .catch(err => showToast("Failed to edit reading", "error"));
         } else {
-            fetch("http://localhost:8000/api/leituras/", {
+            fetch(`${API_BASE_URL}/leituras/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)

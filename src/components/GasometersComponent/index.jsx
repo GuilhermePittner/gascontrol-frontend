@@ -4,6 +4,8 @@ import { Trash2, Edit, Plus, Eye } from "lucide-react";
 import { useForm } from "react-hook-form";
 
 export default function GasometersPage() {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
     const [gasometers, setGasometers] = useState([]);
     const [filteredGasometers, setFilteredGasometers] = useState([]);
     const [search, setSearch] = useState("");
@@ -27,7 +29,7 @@ export default function GasometersPage() {
     
     {/* fetching all 'gasometros' in backend */}
     const fetchGasometers = () => {
-        fetch("http://localhost:8000/api/gasometros/")
+        fetch(`${API_BASE_URL}/gasometros/`)
             .then(res => {
                 if (!res.ok) {
                     if (res.status === 404) return [];
@@ -103,7 +105,7 @@ export default function GasometersPage() {
         const payload = { codigo: data.codigo, apartamento: Number(data.apartamento) };
 
         if (isEditing && selectedGasometer) {
-            fetch(`http://localhost:8000/api/gasometros/${selectedGasometer.id}/`, {
+            fetch(`${API_BASE_URL}/gasometros/${selectedGasometer.id}/`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -118,7 +120,7 @@ export default function GasometersPage() {
                     showToast(`${err.apartamento[0]}`, "error")
                 });
         } else {
-            fetch("http://localhost:8000/api/gasometros/", {
+            fetch(`${API_BASE_URL}/gasometros/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -142,7 +144,7 @@ export default function GasometersPage() {
 
     const handleDelete = () => {
         if (!gasometerToDelete) return;
-        fetch(`http://localhost:8000/api/gasometros/${gasometerToDelete.id}/`, {
+        fetch(`${API_BASE_URL}/gasometros/${gasometerToDelete.id}/`, {
             method: "DELETE",
         })
             .then(res => {
