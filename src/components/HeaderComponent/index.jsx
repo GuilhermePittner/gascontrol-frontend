@@ -16,7 +16,7 @@ export default function Header() {
       he must log-in again */}
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
 
