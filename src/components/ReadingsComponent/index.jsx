@@ -15,11 +15,14 @@ export default function ReadingsPage() {
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState("success");
     const [readingToDelete, setReadingToDelete] = useState(null);
-    const [periodFilter, setPeriodFilter] = useState(null); // SEMANAL, MENSAL, BIMESTRAL, SEMESTRAL
+    const [periodFilter, setPeriodFilter] = useState(null);
 
+
+    {/* hook-form initialiazer */}
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-    // Fetch readings
+    
+    {/* fetching all 'readings' in backend */}
     const fetchReadings = () => {
         fetch("http://localhost:8000/api/leituras/")
             .then(res => {
@@ -44,7 +47,8 @@ export default function ReadingsPage() {
         fetchReadings();
     }, []);
 
-    // Filter by search or periodicity
+    
+    {/* filter methods (search/days period) */}
     useEffect(() => {
         let filtered = readings.filter(r =>
             String(r.id).includes(search) || String(r.gasometro).includes(search)
@@ -56,6 +60,8 @@ export default function ReadingsPage() {
         setCurrentPage(1);
     }, [search, readings, periodFilter]);
 
+
+    {/* opening form in edit || insert mode */}
     const handleOpenForm = (reading = null) => {
         if (reading) {
             setIsEditing(true);
@@ -79,17 +85,23 @@ export default function ReadingsPage() {
         setShowFormModal(true);
     };
 
+
+    {/* clearing fields by closing modal */}
     const handleCloseForm = () => {
         setSelectedReading(null);
         setShowFormModal(false);
     };
 
+
+    {/* toast label which shows messages to user */}
     const showToast = (message, type = "success") => {
         setToastMessage(message);
         setToastType(type);
         setTimeout(() => setToastMessage(""), 5000);
     };
 
+
+    {/* reading delete method */}
     const confirmDelete = (reading) => setReadingToDelete(reading);
 
     const handleDelete = () => {
@@ -106,7 +118,12 @@ export default function ReadingsPage() {
             .finally(() => setReadingToDelete(null));
     };
 
-    // Submit form (create or edit)
+    
+    {/* edit/insert method
+        just like the modal,
+        if isEditing then just
+        update values, else we
+        are inserting a new item */}
     const onSubmit = (data) => {
         const payload = {
             gasometro: Number(data.gasometro),
@@ -147,18 +164,21 @@ export default function ReadingsPage() {
         handleCloseForm();
     };
 
-    // Pagination
+    
+    {/* pagination */}
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredReadings.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredReadings.length / itemsPerPage);
+
 
     return (
         <div className="h-screen flex flex-col bg-gradient-to-br from-[rgb(15,15,30)] via-[rgb(30,30,60)] to-[rgb(50,10,80)] text-white">
             <Header />
 
             <main className="p-8 flex-1 overflow-auto">
-                {/* Search + Add button */}
+                
+                {/* search input and create new reading button */}
                 <div className="flex justify-between items-center mb-4">
                     <input
                         type="text"
@@ -177,6 +197,7 @@ export default function ReadingsPage() {
                     </button>
                 </div>
 
+
                 {/* Periodicity filter */}
                 <div className="flex gap-4 mb-6">
                     {["SEMANAL", "MENSAL", "BIMESTRAL", "SEMESTRAL"].map((p) => (
@@ -194,7 +215,8 @@ export default function ReadingsPage() {
                     ))}
                 </div>
 
-                {/* Toast */}
+
+                {/* toast message section */}
                 {toastMessage && (
                     <div
                         className={`mb-4 p-3 rounded shadow-md transition-opacity duration-500 ${toastType === "success"
@@ -206,12 +228,15 @@ export default function ReadingsPage() {
                     </div>
                 )}
 
-                {/* No results */}
+
+                {/* if there's no cards based on a search,
+                    render this warning div  */}
                 {filteredReadings.length === 0 && (
                     <p className="text-center text-gray-400 mt-6">No results found! Please edit your query.</p>
                 )}
 
-                {/* Readings grid */}
+
+                {/* readings info cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentItems.map((r) => (
                         <div key={r.id} className="bg-white/10 backdrop-blur-lg p-4 rounded-xl shadow-md flex flex-col justify-between">
@@ -246,7 +271,8 @@ export default function ReadingsPage() {
                     ))}
                 </div>
 
-                {/* Pagination */}
+
+                {/* pagination part */}
                 {totalPages > 1 && (
                     <div className="flex justify-center gap-2 mt-6">
                         <button
@@ -275,7 +301,9 @@ export default function ReadingsPage() {
                     </div>
                 )}
 
-                {/* Form Modal (Create/Edit) */}
+
+                {/* form modal (same for create/edit)
+                    working with hook-form  */}
                 {showFormModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl w-[400px]">
@@ -359,7 +387,8 @@ export default function ReadingsPage() {
                     </div>
                 )}
 
-                {/* Details Modal (View) */}
+
+                {/* modal displaying reading card info */}
                 {selectedReading && !showFormModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
                         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl w-[400px]">
@@ -381,7 +410,8 @@ export default function ReadingsPage() {
                     </div>
                 )}
 
-                {/* Delete Confirmation Modal */}
+
+                {/* delete confirmation modal */}
                 {readingToDelete && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl w-[400px]">

@@ -11,14 +11,21 @@ export default function GasometersPage() {
     const [showFormModal, setShowFormModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 9;
     const [toastMessage, setToastMessage] = useState("");
-    const [toastType, setToastType] = useState("success"); // "success" ou "error"
+    const [toastType, setToastType] = useState("success");
     const [gasometerToDelete, setGasometerToDelete] = useState(null);
+    
 
+    {/* paginate limit */}
+    const itemsPerPage = 9;
+
+
+    {/* hook-form in order to validate
+    edit/create gasometer */}
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-    // Fetch gasometers
+    
+    {/* fetching all 'gasometros' in backend */}
     const fetchGasometers = () => {
         fetch("http://localhost:8000/api/gasometros/")
             .then(res => {
@@ -43,16 +50,21 @@ export default function GasometersPage() {
         fetchGasometers();
     }, []);
 
-    // Filter by search (code or ID)
+
+    {/* filter to get gasometer with same ID/NAME */}
     useEffect(() => {
         const filtered = gasometers.filter(g =>
             g.codigo.toLowerCase().includes(search.toLowerCase()) ||
             String(g.id) === search
         );
         setFilteredGasometers(filtered);
-        setCurrentPage(1); // reset page on search
+        setCurrentPage(1);
     }, [search, gasometers]);
 
+
+    {/* this method opens edit/insert modal
+        if gasometer = null, then we're creating/inserting
+        else, we're just editing */}
     const handleOpenForm = (gasometer = null) => {
         if (gasometer) {
             setIsEditing(true);
@@ -66,17 +78,27 @@ export default function GasometersPage() {
         setShowFormModal(true);
     };
 
+
+    {/* closing modal and clearing inputs */}
     const handleCloseForm = () => {
         setSelectedGasometer(null);
         setShowFormModal(false);
     };
 
+
+    {/* toast label which shows messages to user */}
     const showToast = (message, type = "success") => {
         setToastMessage(message);
         setToastType(type);
         setTimeout(() => setToastMessage(""), 5000);
     };
 
+
+    {/* edit/insert method
+        just like the modal,
+        if isEditing then just
+        update values, else we
+        are inserting a new item */}
     const onSubmit = (data) => {
         const payload = { codigo: data.codigo, apartamento: Number(data.apartamento) };
 
@@ -114,6 +136,8 @@ export default function GasometersPage() {
         handleCloseForm();
     };
 
+
+    {/* gasometer delete method */}
     const confirmDelete = (gasometer) => setGasometerToDelete(gasometer);
 
     const handleDelete = () => {
@@ -130,18 +154,22 @@ export default function GasometersPage() {
             .finally(() => setGasometerToDelete(null));
     };
 
-    // Pagination
+    
+    {/* pagination */}
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredGasometers.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredGasometers.length / itemsPerPage);
+
 
     return (
         <div className="h-screen flex flex-col bg-gradient-to-br from-[rgb(15,15,30)] via-[rgb(30,30,60)] to-[rgb(50,10,80)] text-white">
             <Header />
 
             <main className="p-8 flex-1 overflow-auto">
-                {/* Search + Add button */}
+
+
+                {/* search input and create new gasometer button */}
                 <div className="flex justify-between items-center mb-4">
                     <input
                         type="text"
@@ -160,7 +188,8 @@ export default function GasometersPage() {
                     </button>
                 </div>
 
-                {/* Toast */}
+
+                {/* toast message section */}
                 {toastMessage && (
                     <div
                         className={`mb-4 p-3 rounded shadow-md transition-opacity duration-500 ${toastType === "success"
@@ -172,7 +201,8 @@ export default function GasometersPage() {
                     </div>
                 )}
 
-                {/* Gasometers grid */}
+
+                {/* gasometers info cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {currentItems.map((g) => (
                         <div key={g.id} className="bg-white/10 backdrop-blur-lg p-4 rounded-xl shadow-md flex flex-col justify-between">
@@ -206,14 +236,17 @@ export default function GasometersPage() {
                     ))}
                 </div>
 
-                {/* No results message */}
+
+                {/* if there's no cards based on a search,
+                    render this warning div  */}
                 {currentItems.length === 0 && (
                     <div className="text-center text-gray-300 mt-6 text-lg">
                         No results found! Please edit your query.
                     </div>
                 )}
 
-                {/* Pagination */}
+
+                {/* pagination part */}
                 {totalPages > 1 && (
                     <div className="flex justify-center gap-2 mt-6">
                         <button
@@ -242,7 +275,9 @@ export default function GasometersPage() {
                     </div>
                 )}
 
-                {/* Form Modal */}
+
+                {/* form modal (same for create/edit)
+                    working with hook-form  */}
                 {showFormModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl w-[400px]">
@@ -291,7 +326,8 @@ export default function GasometersPage() {
                     </div>
                 )}
 
-                {/* Details Modal */}
+
+                {/* modal displaying gasometer card info */}
                 {selectedGasometer && !showFormModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-40">
                         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl w-[400px]">
@@ -310,7 +346,8 @@ export default function GasometersPage() {
                     </div>
                 )}
 
-                {/* Delete Confirmation Modal */}
+
+                {/* delete confirmation modal */}
                 {gasometerToDelete && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                         <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl w-[400px]">
@@ -338,3 +375,4 @@ export default function GasometersPage() {
         </div>
     );
 }
+
